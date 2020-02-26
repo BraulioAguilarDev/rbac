@@ -1,0 +1,4 @@
+p, admin, /*, *
+p, anonymous, /about, *
+p, lms, /lms, *
+p, uap, /uap, *
