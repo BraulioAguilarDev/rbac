@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -9,15 +10,33 @@ import (
 	pka "github.com/braulioinf/pkgauth"
 )
 
-// GetNice .
-func GetNice(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Nice XD"))
+// GetProduct .
+func GetProduct(w http.ResponseWriter, r *http.Request) {
+	data := []string{"Go", "Js", "PyThon"}
+	products, _ := json.Marshal(data)
+	w.Write([]byte(products))
+}
+
+// PostProduct .
+func PostProduct(w http.ResponseWriter, r *http.Request) {
+	data := []string{"React"}
+	new, _ := json.Marshal(data)
+	w.Write([]byte(new))
+}
+
+// GetUser .
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	data := []string{"Juan", "Pedro", "David"}
+	users, _ := json.Marshal(data)
+	w.Write([]byte(users))
 }
 
 func main() {
 	r := mux.NewRouter()
+	r.HandleFunc("/product", PostProduct).Methods("POST")
+	r.HandleFunc("/product", GetProduct)
 
-	r.HandleFunc("/example", GetNice)
+	r.HandleFunc("/user", GetUser)
 
 	rbac := &pka.Auth{
 		Model:  "./model.conf",
