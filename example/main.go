@@ -4,11 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 
 	pka "github.com/braulioinf/pkgauth"
 )
+
+var FIREBASE_CREDENTIALS_JSON string
+
+func init() {
+	if err := godotenv.Load(); err != nil {
+		fmt.Println(err)
+	}
+
+	FIREBASE_CREDENTIALS_JSON = fmt.Sprintf("firebase-admin.%v.json", os.Getenv("ENVIRONMENT"))
+}
 
 // GetProduct .
 func GetProduct(w http.ResponseWriter, r *http.Request) {
@@ -38,12 +50,8 @@ func main() {
 
 	r.HandleFunc("/user", GetUser)
 
-	rbac := &pka.Auth{
-		Model:  "./model.conf",
-		Policy: "./policy.csv",
-	}
-
-	if err := rbac.NewEnforcer(); err != nil {
+	rbac := pka.NewRBAC("./model.conf", "./policy.csv", FIREBASE_CREDENTIALS_JSON)
+	if err := rbac.Initialize(); err != nil {
 		fmt.Println(err.Error())
 	}
 

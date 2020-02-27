@@ -1,3 +1,4 @@
 p, ADMIN, /*, *
 p, USER, /user, GET
 p, ANY, /register, POST
+p, google.com, /*, *

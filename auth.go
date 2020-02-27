@@ -1,29 +1,38 @@
 package auth
 
 import (
+	"context"
+	"fmt"
+
+	firebase "firebase.google.com/go"
 	casbin "github.com/casbin/casbin/v2"
+	"google.golang.org/api/option"
 )
 
-// Auth .
-type Auth struct {
-	Model  string
-	Policy string
-	Casbin *casbin.Enforcer
+// NewRBAC struct
+func NewRBAC(model, policy, CredentialsJSON string) *RBAC {
+	return &RBAC{
+		Model:           model,
+		Policy:          policy,
+		CredentialsJSON: CredentialsJSON,
+	}
 }
 
-// NewAuth .
-func NewAuth() *Auth {
-	return &Auth{}
-}
+// Initialize .
+func (rbac *RBAC) Initialize() error {
+	options := option.WithCredentialsFile(rbac.CredentialsJSON)
+	app, err := firebase.NewApp(context.Background(), nil, options)
+	if err != nil {
+		fmt.Printf("Error initializing app: %v", err.Error())
+	}
 
-// NewEnforcer .
-func (a *Auth) NewEnforcer() error {
-	enforcer, err := casbin.NewEnforcer(a.Model, a.Policy)
+	casbin, err := casbin.NewEnforcer(rbac.Model, rbac.Policy)
 	if err != nil {
 		return err
 	}
 
-	a.Casbin = enforcer
+	rbac.Casbin = casbin
+	rbac.Firebase = app
 
 	return nil
 }
