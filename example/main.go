@@ -22,27 +22,28 @@ func init() {
 	FIREBASE_CREDENTIALS_JSON = fmt.Sprintf("firebase-admin.%v.json", os.Getenv("ENVIRONMENT"))
 }
 
-// GetProduct .
+// GetProduct -> GET: https://localhost:5000/product
 func GetProduct(w http.ResponseWriter, r *http.Request) {
 	data := []string{"Go", "Js", "PyThon"}
 	products, _ := json.Marshal(data)
 	w.Write([]byte(products))
 }
 
-// PostProduct .
+// PostProduct -> POST: http://localhost:5000/product
 func PostProduct(w http.ResponseWriter, r *http.Request) {
 	data := []string{"React"}
 	new, _ := json.Marshal(data)
 	w.Write([]byte(new))
 }
 
-// GetUser .
+// GetUser -> GET: http://localhost:5000/user
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	data := []string{"Juan", "Pedro", "David"}
 	users, _ := json.Marshal(data)
 	w.Write([]byte(users))
 }
 
+// Run server $ go run main.go
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/product", PostProduct).Methods("POST")
