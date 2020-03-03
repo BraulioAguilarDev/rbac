@@ -10,7 +10,7 @@ import (
 	"firebase.google.com/go/auth"
 )
 
-// Authenticated .
+// Authenticated func
 func (rbac *RBAC) Authenticated(req *http.Request) (*auth.Token, error) {
 	authorizationHeader := req.Header.Get("Authorization")
 	if len(authorizationHeader) == 0 {

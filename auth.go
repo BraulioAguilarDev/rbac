@@ -5,34 +5,30 @@ import (
 	"fmt"
 
 	firebase "firebase.google.com/go"
-	casbin "github.com/casbin/casbin/v2"
 	"google.golang.org/api/option"
 )
 
-// NewRBAC struct
-func NewRBAC(model, policy, CredentialsJSON string) *RBAC {
+// RBAC struct
+type RBAC struct {
+	Firebase            *firebase.App
+	FirebaseCredentials string
+}
+
+// NewRBAC instance
+func NewRBAC(Credentials string) *RBAC {
 	return &RBAC{
-		Model:           model,
-		Policy:          policy,
-		CredentialsJSON: CredentialsJSON,
+		FirebaseCredentials: Credentials,
 	}
 }
 
 // Initialize .
 func (rbac *RBAC) Initialize() error {
-	options := option.WithCredentialsFile(rbac.CredentialsJSON)
+	options := option.WithCredentialsFile(rbac.FirebaseCredentials)
 	app, err := firebase.NewApp(context.Background(), nil, options)
 	if err != nil {
 		fmt.Printf("Error initializing app: %v", err.Error())
 	}
 
-	casbin, err := casbin.NewEnforcer(rbac.Model, rbac.Policy)
-	if err != nil {
-		return err
-	}
-
-	rbac.Casbin = casbin
 	rbac.Firebase = app
-
 	return nil
 }

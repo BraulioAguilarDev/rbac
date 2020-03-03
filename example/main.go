@@ -12,14 +12,14 @@ import (
 	pka "github.com/braulioinf/pkgauth"
 )
 
-var FIREBASE_CREDENTIALS_JSON string
+var FIREBASE_CREDENTIALS string
 
 func init() {
 	if err := godotenv.Load(); err != nil {
 		fmt.Println(err)
 	}
 
-	FIREBASE_CREDENTIALS_JSON = fmt.Sprintf("firebase-admin.%v.json", os.Getenv("ENVIRONMENT"))
+	FIREBASE_CREDENTIALS = fmt.Sprintf("firebase-admin.%v.json", os.Getenv("ENVIRONMENT"))
 }
 
 // GetProduct -> GET: https://localhost:5000/product
@@ -51,7 +51,7 @@ func main() {
 
 	r.HandleFunc("/user", GetUser)
 
-	rbac := pka.NewRBAC("./model.conf", "./policy.csv", FIREBASE_CREDENTIALS_JSON)
+	rbac := pka.NewRBAC(FIREBASE_CREDENTIALS)
 	if err := rbac.Initialize(); err != nil {
 		fmt.Println(err.Error())
 	}
