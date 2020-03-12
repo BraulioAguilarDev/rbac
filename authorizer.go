@@ -18,7 +18,10 @@ func (rbac *RBAC) Authorizer() func(next http.Handler) http.Handler {
 				return
 			}
 
-			roles, err := GetRoles(token.UID)
+			// Set UID on success auth
+			rbac.Wrapper.UID = token.UID
+
+			roles, err := rbac.GetRolesByUID()
 			if err != nil {
 				w.WriteHeader(http.StatusForbidden)
 				return
@@ -32,18 +35,18 @@ func (rbac *RBAC) Authorizer() func(next http.Handler) http.Handler {
 			for _, role := range roles {
 				access = false
 
-				if err := rbac.Vault.LoginAs(role); err != nil {
+				if err := rbac.Wrapper.LoginAs(role); err != nil {
 					fmt.Printf("Login as error: %v\n", err.Error())
 				}
 
 				switch r.Method {
 				case "GET":
-					access = rbac.Vault.CanRead(r.URL.Path)
+					access = rbac.Wrapper.CanRead(r.URL.Path)
 				case "POST":
 				case "PUT":
-					access = rbac.Vault.CanWrite(r.URL.Path)
+					access = rbac.Wrapper.CanWrite(r.URL.Path)
 				case "DELETE":
-					access = rbac.Vault.CanDelete(r.URL.Path)
+					access = rbac.Wrapper.CanDelete(r.URL.Path)
 				}
 
 				if access {

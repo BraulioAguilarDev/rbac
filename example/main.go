@@ -12,14 +12,24 @@ import (
 	rbac "github.com/braulioinf/rbac"
 )
 
-var FIREBASE_CREDENTIALS string
+var (
+	FIREBASE_CONFIG string
+	VAULT_API       string
+	VAULT_USERNAME  string
+	VAULT_PASSWORD  string
+	ROLE_API        string
+)
 
 func init() {
 	if err := godotenv.Load(); err != nil {
 		fmt.Println(err)
 	}
 
-	FIREBASE_CREDENTIALS = fmt.Sprintf("firebase-admin.%v.json", os.Getenv("ENVIRONMENT"))
+	FIREBASE_CONFIG = fmt.Sprintf("firebase-admin.%v.json", os.Getenv("ENVIRONMENT"))
+	VAULT_API = os.Getenv("VAULT_API")
+	VAULT_USERNAME = os.Getenv("VAULT_USERNAME")
+	VAULT_PASSWORD = os.Getenv("VAULT_PASSWORD")
+	ROLE_API = os.Getenv("ROLE_API")
 }
 
 // GetProduct -> GET: https://localhost:5000/product
@@ -46,12 +56,20 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 // Run server $ go run main.go
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/product", PostProduct).Methods("POST")
-	r.HandleFunc("/product", GetProduct)
+	r.HandleFunc("/v1/product", PostProduct).Methods("POST")
+	r.HandleFunc("/v1/product", GetProduct)
 
-	r.HandleFunc("/user", GetUser)
+	r.HandleFunc("/v1/user", GetUser)
 
-	rbac := pka.NewRBAC(FIREBASE_CREDENTIALS)
+	rbac := rbac.RBAC{
+		Config: &rbac.Config{
+			VaultAPI: VAULT_API,
+			Username: VAULT_USERNAME,
+			Password: VAULT_PASSWORD,
+			Firebase: FIREBASE_CONFIG,
+			RoleAPI:  ROLE_API,
+		},
+	}
 	if err := rbac.Initialize(); err != nil {
 		fmt.Println(err.Error())
 	}
