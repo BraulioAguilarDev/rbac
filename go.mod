@@ -1,6 +1,6 @@
-module github.com/braulioinf/pkgauth
+module github.com/braulioinf/rbac
 
-go 1.13
+go 1.14
 
 require (
 	cloud.google.com/go/firestore v1.1.1 // indirect

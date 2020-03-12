@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 
-	pka "github.com/braulioinf/pkgauth"
+	rbac "github.com/braulioinf/rbac"
 )
 
 var FIREBASE_CREDENTIALS string
