@@ -1,11 +1,11 @@
-package vault
+package rbac
 
 import (
 	"errors"
 	"fmt"
 )
 
-// LoginAs .
+// LoginAs func
 func (w *Wrapper) LoginAs(role string) error {
 	if len(role) == 0 {
 		return errors.New("A role is needed")
@@ -22,7 +22,8 @@ func (w *Wrapper) LoginAs(role string) error {
 	}
 
 	if secret == nil {
-		return errors.New("Role not valid")
+		text := fmt.Sprintf("Role (%v) not valid", role)
+		return errors.New(text)
 	}
 
 	roleID := secret.Data["role_id"].(string)
@@ -57,7 +58,7 @@ func (w *Wrapper) LoginAs(role string) error {
 	return nil
 }
 
-// LoginWithUserPassword .
+// LoginWithUserPassword func
 func (w *Wrapper) LoginWithUserPassword() error {
 	path := fmt.Sprintf("auth/userpass/login/%s", w.Username)
 	options := map[string]interface{}{
