@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -18,14 +17,14 @@ func (rbac *RBAC) Authenticated(req *http.Request) (*auth.Token, error) {
 	}
 
 	bearerToken := strings.Split(authorizationHeader, " ")
-	if len(bearerToken) != 2 {
+	if len(bearerToken) != 2 || bearerToken[0] != "Bearer" {
 		return nil, errors.New("Token has wrong format")
 	}
 
 	ctx := context.Background()
 	client, err := rbac.Firebase.Auth(ctx)
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
 
 	token, err := client.VerifyIDToken(ctx, bearerToken[1])
