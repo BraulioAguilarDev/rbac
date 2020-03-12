@@ -42,7 +42,7 @@ func (rbac *RBAC) Authorizer() func(next http.Handler) http.Handler {
 				case "POST":
 				case "PUT":
 					access = rbac.Vault.CanWrite(r.URL.Path)
-				case "DELTE":
+				case "DELETE":
 					access = rbac.Vault.CanDelete(r.URL.Path)
 				}
 

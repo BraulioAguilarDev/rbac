@@ -7,7 +7,7 @@ import (
 
 // LoginAs .
 func (w *Wrapper) LoginAs(role string) error {
-	if role == "" {
+	if len(role) == 0 {
 		return errors.New("A role is needed")
 	}
 
