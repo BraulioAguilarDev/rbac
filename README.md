@@ -1,1 +1,1 @@
-# pkgauth
+# RBAC module

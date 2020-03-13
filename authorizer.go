@@ -36,7 +36,7 @@ func (rbac *RBAC) Authorizer() func(next http.Handler) http.Handler {
 				access = false
 
 				if err := rbac.Wrapper.LoginAs(role); err != nil {
-					fmt.Printf("Login as error: %v\n", err.Error())
+					fmt.Printf("LoginAs: %v\n", err.Error())
 				}
 
 				switch r.Method {
