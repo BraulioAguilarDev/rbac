@@ -8,16 +8,18 @@ A middleware for request validation created with Go and Vault
 * Run [Profile & Role Service](https://github.com/braulioinf/dummy_roles_profiles)
 * Run [Account Microservice](https://github.com/ExponentialEducation/account-microservice)
 
-## Install
+## Installation
 
 `go get -u github.com/braulioinf/rbac`
 
-## Example
+## Basic Usage
 
 Middleware can be added to a router using `Router.Use()`:
 
 ```go
 // package main
+
+import "github.com/braulioinf/rbac"
 
 func main() {
   r := mux.NewRouter()
@@ -45,3 +47,7 @@ func main() {
   }
 }
 ```
+
+## Full example
+
+For more information [Example directory](https://github.com/braulioinf/rbac/tree/develop/example)
