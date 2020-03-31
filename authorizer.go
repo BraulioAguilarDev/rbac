@@ -7,7 +7,7 @@ import (
 
 var access bool
 
-// Authorizer .
+// Authorizer func
 func (rbac *RBAC) Authorizer() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		fn := func(w http.ResponseWriter, r *http.Request) {
@@ -40,12 +40,12 @@ func (rbac *RBAC) Authorizer() func(next http.Handler) http.Handler {
 				}
 
 				switch r.Method {
-				case "GET":
+				case http.MethodGet:
 					access = rbac.Wrapper.CanRead(r.URL.Path)
-				case "POST":
-				case "PUT":
+				case http.MethodPost:
+				case http.MethodPut:
 					access = rbac.Wrapper.CanWrite(r.URL.Path)
-				case "DELETE":
+				case http.MethodDelete:
 					access = rbac.Wrapper.CanDelete(r.URL.Path)
 				}
 
