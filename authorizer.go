@@ -58,8 +58,6 @@ func (rbac *RBAC) Authorizer() func(next http.Handler) http.Handler {
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
-
-			// next.ServeHTTP(w, r)
 		}
 
 		return http.HandlerFunc(fn)

@@ -9,15 +9,20 @@ import (
 	"firebase.google.com/go/auth"
 )
 
+const (
+	AUTHORIZATION = "Authorization"
+	BEARER        = "Bearer"
+)
+
 // Authenticated func
 func (rbac *RBAC) Authenticated(req *http.Request) (*auth.Token, error) {
-	authorizationHeader := req.Header.Get("Authorization")
+	authorizationHeader := req.Header.Get(AUTHORIZATION)
 	if len(authorizationHeader) == 0 {
 		return nil, errors.New("An authorization header is required")
 	}
 
 	bearerToken := strings.Split(authorizationHeader, " ")
-	if len(bearerToken) != 2 || bearerToken[0] != "Bearer" {
+	if len(bearerToken) != 2 || bearerToken[0] != BEARER {
 		return nil, errors.New("Token has wrong format")
 	}
 
