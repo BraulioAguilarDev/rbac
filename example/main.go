@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 
-	rbac "github.com/braulioinf/rbac"
+	rbac "github.com/ExponentialEducation/go-rbac"
 )
 
 var (
@@ -18,6 +18,7 @@ var (
 	VAULT_USERNAME  string
 	VAULT_PASSWORD  string
 	ROLE_API        string
+	PORT            string
 )
 
 func init() {
@@ -30,6 +31,7 @@ func init() {
 	VAULT_USERNAME = os.Getenv("VAULT_USERNAME")
 	VAULT_PASSWORD = os.Getenv("VAULT_PASSWORD")
 	ROLE_API = os.Getenv("ROLE_API")
+	PORT = os.Getenv("APP_PORT")
 }
 
 // GetProduct -> GET: https://localhost:5000/product
@@ -55,6 +57,8 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 // Run server $ go run main.go
 func main() {
+	fmt.Printf("Run example in: :%v\n", PORT)
+
 	r := mux.NewRouter()
 	r.HandleFunc("/v1/product", PostProduct).Methods("POST")
 	r.HandleFunc("/v1/product", GetProduct)
@@ -76,7 +80,7 @@ func main() {
 
 	r.Use(rbac.Authorizer())
 
-	if err := http.ListenAndServe(":5000", r); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%v", PORT), r); err != nil {
 		fmt.Println(err)
 	}
 }
