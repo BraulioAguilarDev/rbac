@@ -1,4 +1,4 @@
-module github.com/braulioinf/rbac
+module github.com/ExponentialEducation/go-rbac
 
 go 1.14
 
