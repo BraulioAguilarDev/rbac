@@ -6,6 +6,11 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// Response struct
+type Response struct {
+	Data []Role `json:"data"`
+}
+
 // Role struct
 type Role struct {
 	ID       int    `json:"-"`
@@ -30,19 +35,19 @@ func (rbac *RBAC) GetRolesByUID() ([]string, error) {
 		Endpoint: fmt.Sprintf("%s/api/roles/%v", rbac.Config.RoleAPI, uid),
 	}
 
-	res, err := req.MakePetition()
+	data, err := req.MakePetition()
 	if err != nil {
 		return nil, err
 	}
 
-	rolesData := new([]Role)
+	response := new(Response)
 
-	if err := mapstructure.Decode(res, &rolesData); err != nil {
+	if err := mapstructure.Decode(data, &response); err != nil {
 		fmt.Println(err.Error())
 	}
 
 	var roles []string
-	for _, r := range *rolesData {
+	for _, r := range response.Data {
 		roles = append(roles, r.Name)
 	}
 

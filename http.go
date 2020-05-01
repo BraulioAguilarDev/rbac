@@ -19,7 +19,8 @@ func (ur *Request) MakePetition() (interface{}, error) {
 		return nil, err
 	}
 
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Origin", "pwa.bedu.org")
 
 	res, err := client.Do(req)
 	if err != nil {
