@@ -4,7 +4,7 @@ A middleware for request validation created with Go and Vault
 
 ## What do you need for this to work?
 
-* Run [Vault Service](https://github.com/braulioinf/vault-poc)
+* Run [Vault Service](https://github.com/ExponentialEducation/vault)
 * Run [Profile & Role Service](https://github.com/ExponentialEducation/roles-profiles-microservice)
 * Run [Account Microservice](https://github.com/ExponentialEducation/account-microservice)
 
