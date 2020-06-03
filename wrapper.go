@@ -13,7 +13,6 @@ type Wrapper struct {
 	Password   string
 	Authorizer string
 	Token      string
-	UID        string
 }
 
 // NewWrapper func

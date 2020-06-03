@@ -3,8 +3,10 @@ package rbac
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	firebase "firebase.google.com/go"
+	"firebase.google.com/go/auth"
 	"google.golang.org/api/option"
 )
 
@@ -45,4 +47,50 @@ func (rbac *RBAC) Initialize() error {
 
 	rbac.Firebase = app
 	return nil
+}
+
+func (rbac *RBAC) verifyToken(bearerToken string) (*auth.Token, error) {
+	ctx := context.Background()
+	client, err := rbac.Firebase.Auth(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := client.VerifyIDToken(ctx, bearerToken)
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
+}
+
+// GrantAccess func
+func (rbac *RBAC) GrantAccess(roles []string, method string, path string) bool {
+	var granted bool
+
+	for _, role := range roles {
+		granted = false
+
+		// Generate new token for current role
+		if err := rbac.Wrapper.LoginAs(role); err != nil {
+			fmt.Printf("LoginAs: %v\n", err.Error())
+		}
+
+		switch method {
+		case http.MethodGet:
+			granted = rbac.Wrapper.CanRead(path)
+		case http.MethodPost:
+			granted = rbac.Wrapper.CanWrite(path)
+		case http.MethodPut:
+			granted = rbac.Wrapper.CanWrite(path)
+		case http.MethodDelete:
+			granted = rbac.Wrapper.CanDelete(path)
+		}
+
+		if granted {
+			return true
+		}
+	}
+
+	return granted
 }

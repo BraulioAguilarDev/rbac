@@ -6,6 +6,7 @@ import (
 )
 
 // LoginAs func
+// Returns the standardized token ID (token) for the given secret
 func (w *Wrapper) LoginAs(role string) error {
 	if len(role) == 0 {
 		return errors.New("A role is needed")
@@ -59,6 +60,7 @@ func (w *Wrapper) LoginAs(role string) error {
 }
 
 // LoginWithUserPassword func
+// First vault authentication for following requests
 func (w *Wrapper) LoginWithUserPassword() error {
 	path := fmt.Sprintf("auth/userpass/login/%s", w.Username)
 	options := map[string]interface{}{
@@ -73,4 +75,40 @@ func (w *Wrapper) LoginWithUserPassword() error {
 	w.Authorizer = secret.Auth.ClientToken
 
 	return nil
+}
+
+// CanDelete func
+func (w *Wrapper) CanDelete(path string) bool {
+	if _, err := w.Client.Logical().Delete(path); err != nil {
+		return false
+	}
+
+	return true
+}
+
+// CanRead func
+func (w *Wrapper) CanRead(path string) bool {
+	if _, err := w.Client.Logical().Read(path); err != nil {
+		return false
+	}
+
+	return true
+}
+
+// CanWrite func
+func (w *Wrapper) CanWrite(path string) bool {
+	// The v2 of kv secret engine needs this
+	data := make(map[string]interface{})
+	info := map[string]string{
+		"test": "test",
+	}
+
+	data["data"] = info
+
+	if _, err := w.Client.Logical().Write(path, data); err != nil {
+		fmt.Printf("ERROR: %v", err)
+		return false
+	}
+
+	return true
 }

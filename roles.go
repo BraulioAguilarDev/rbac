@@ -27,9 +27,7 @@ type Request struct {
 }
 
 // GetRolesByUID func
-func (rbac *RBAC) GetRolesByUID() ([]string, error) {
-	uid := rbac.Wrapper.UID
-
+func (rbac *RBAC) GetRolesByUID(uid string) ([]string, error) {
 	req := &Request{
 		Method:   "GET",
 		Endpoint: fmt.Sprintf("%s/api/roles/%v", rbac.Config.RoleAPI, uid),
