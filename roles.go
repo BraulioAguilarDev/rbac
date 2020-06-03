@@ -30,7 +30,7 @@ type Request struct {
 func (rbac *RBAC) GetRolesByUID(uid string) ([]string, error) {
 	req := &Request{
 		Method:   "GET",
-		Endpoint: fmt.Sprintf("%s/api/roles/%v", rbac.Config.RoleAPI, uid),
+		Endpoint: fmt.Sprintf("%s/api/roles/%v", rbac.RoleAPI, uid),
 	}
 
 	data, err := req.MakePetition()

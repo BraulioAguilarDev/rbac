@@ -3,21 +3,68 @@ package rbac
 import (
 	"errors"
 	"fmt"
+	"os"
+
+	"github.com/hashicorp/vault/api"
 )
+
+const ApproleLogin = "auth/approle/login"
+
+// Vault struct
+type Vault struct {
+	Client     *api.Client
+	Username   string
+	Password   string
+	Authorizer string
+}
+
+// NewVault func
+func NewVault(config *api.Config) (*Vault, error) {
+	if config == nil {
+		return DefaultVault()
+	}
+
+	client, err := api.NewClient(config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Vault{
+		Client: client,
+	}, nil
+}
+
+// DefaultVault func
+func DefaultVault() (*Vault, error) {
+	config := &api.Config{
+		Address: os.Getenv("VAULT_API"),
+	}
+
+	client, err := api.NewClient(config)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Vault{
+		Client:   client,
+		Username: os.Getenv("VAULT_USERNAME"),
+		Password: os.Getenv("VAULT_PASSWORD"),
+	}, nil
+}
 
 // LoginAs func
 // Returns the standardized token ID (token) for the given secret
-func (w *Wrapper) LoginAs(role string) error {
+func (v *Vault) LoginAs(role string) error {
 	if len(role) == 0 {
 		return errors.New("A role is needed")
 	}
 
 	// Set the token in w, to query to Vault
-	w.Client.SetToken(w.Authorizer)
+	v.Client.SetToken(v.Authorizer)
 
 	// Get role-id
 	path := fmt.Sprintf("auth/approle/role/%s/role-id", role)
-	secret, err := w.Client.Logical().Read(path)
+	secret, err := v.Client.Logical().Read(path)
 	if err != nil {
 		return err
 	}
@@ -31,7 +78,7 @@ func (w *Wrapper) LoginAs(role string) error {
 
 	// Get secret-id
 	path = fmt.Sprintf("auth/approle/role/%s/secret-id", role)
-	secret, err = w.Client.Logical().Write(path, nil)
+	secret, err = v.Client.Logical().Write(path, nil)
 	if err != nil {
 		return err
 	}
@@ -44,7 +91,7 @@ func (w *Wrapper) LoginAs(role string) error {
 	}
 
 	// Login with roleID and secretID
-	secret, err = w.Client.Logical().Write(ApproleLogin, options)
+	secret, err = v.Client.Logical().Write(ApproleLogin, options)
 	if err != nil {
 		return err
 	}
@@ -54,32 +101,32 @@ func (w *Wrapper) LoginAs(role string) error {
 		return err
 	}
 
-	w.Client.SetToken(token)
+	v.Client.SetToken(token)
 
 	return nil
 }
 
 // LoginWithUserPassword func
 // First vault authentication for following requests
-func (w *Wrapper) LoginWithUserPassword() error {
-	path := fmt.Sprintf("auth/userpass/login/%s", w.Username)
+func (v *Vault) LoginWithUserPassword() error {
+	path := fmt.Sprintf("auth/userpass/login/%s", v.Username)
 	options := map[string]interface{}{
-		"password": w.Password,
+		"password": v.Password,
 	}
 
-	secret, err := w.Client.Logical().Write(path, options)
+	secret, err := v.Client.Logical().Write(path, options)
 	if err != nil {
 		return err
 	}
 
-	w.Authorizer = secret.Auth.ClientToken
+	v.Authorizer = secret.Auth.ClientToken
 
 	return nil
 }
 
 // CanDelete func
-func (w *Wrapper) CanDelete(path string) bool {
-	if _, err := w.Client.Logical().Delete(path); err != nil {
+func (v *Vault) CanDelete(path string) bool {
+	if _, err := v.Client.Logical().Delete(path); err != nil {
 		return false
 	}
 
@@ -87,8 +134,8 @@ func (w *Wrapper) CanDelete(path string) bool {
 }
 
 // CanRead func
-func (w *Wrapper) CanRead(path string) bool {
-	if _, err := w.Client.Logical().Read(path); err != nil {
+func (v *Vault) CanRead(path string) bool {
+	if _, err := v.Client.Logical().Read(path); err != nil {
 		return false
 	}
 
@@ -96,7 +143,7 @@ func (w *Wrapper) CanRead(path string) bool {
 }
 
 // CanWrite func
-func (w *Wrapper) CanWrite(path string) bool {
+func (v *Vault) CanWrite(path string) bool {
 	// The v2 of kv secret engine needs this
 	data := make(map[string]interface{})
 	info := map[string]string{
@@ -105,8 +152,7 @@ func (w *Wrapper) CanWrite(path string) bool {
 
 	data["data"] = info
 
-	if _, err := w.Client.Logical().Write(path, data); err != nil {
-		fmt.Printf("ERROR: %v", err)
+	if _, err := v.Client.Logical().Write(path, data); err != nil {
 		return false
 	}
 

@@ -76,13 +76,11 @@ func main() {
 	r.HandleFunc("/v1/data/lms/capture/courses", courses).Methods("GET")
 
 	rbac := rbac.RBAC{
-		Config: &rbac.Config{
-			VaultAPI: VAULT_API,
-			Username: VAULT_USERNAME,
-			Password: VAULT_PASSWORD,
-			Firebase: FIREBASE_CREDENTIALS,
-			RoleAPI:  ROLE_API,
-		},
+		VaultAPI:     VAULT_API,
+		Username:     VAULT_USERNAME,
+		Password:     VAULT_PASSWORD,
+		FirebaseCert: FIREBASE_CREDENTIALS,
+		RoleAPI:      ROLE_API,
 	}
 	if err := rbac.Initialize(); err != nil {
 		fmt.Println(err.Error())

@@ -27,13 +27,11 @@ func main() {
 
   // Config
   rbac := rbac.RBAC{
-    Config: &rbac.Config{
-      VaultAPI: "https://api.vault:8200",
-      Username: "user",
-      Password: "pass",
-      Firebase: "firebase-admin.json",
-      RoleAPI:  "https://api.roles.com",
-    },
+    VaultAPI:     "http://127.0.0.1:8200",
+    Username:     "authorizer",
+    Password:     "helloworld",
+    FirebaseCert: "firebase-admin.json",
+    RoleAPI:      "http://127.0.0.1:8080",
   }
 
   if err := rbac.Initialize(); err != nil {

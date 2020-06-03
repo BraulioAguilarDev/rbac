@@ -2,7 +2,7 @@ package rbac
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"net/http"
 
 	firebase "firebase.google.com/go"
@@ -10,53 +10,58 @@ import (
 	"google.golang.org/api/option"
 )
 
-// Config struct
-type Config struct {
-	Username string
-	Password string
-	Firebase string
-	VaultAPI string
-	RoleAPI  string
-}
-
 // RBAC struct
 type RBAC struct {
-	Wrapper  *Wrapper
-	Firebase *firebase.App
-	Config   *Config
+	Username      string
+	Password      string
+	VaultAPI      string
+	RoleAPI       string
+	Vault         *Vault
+	FirebaseCert  string
+	FirebaseAdmin *auth.Client
 }
 
 // Initialize func
 func (rbac *RBAC) Initialize() error {
-	options := option.WithCredentialsFile(rbac.Config.Firebase)
-	app, err := firebase.NewApp(context.Background(), nil, options)
+	ctx := context.Background()
+
+	options := option.WithCredentialsFile(rbac.FirebaseCert)
+	app, err := firebase.NewApp(ctx, nil, options)
 	if err != nil {
-		fmt.Printf("Config firebase error: %v \n", err.Error())
+		log.Printf("Config firebase error: %v \n", err.Error())
+		return err
 	}
 
-	wrapper, err := rbac.NewWrapper(nil)
+	client, err := app.Auth(ctx)
 	if err != nil {
-		fmt.Printf("Init vault error: %v \n", err.Error())
+		log.Printf("Client firebase error: %v \n", err.Error())
+		return err
 	}
 
-	rbac.Wrapper = wrapper
+	rbac.FirebaseAdmin = client
 
-	if err := rbac.Wrapper.LoginWithUserPassword(); err != nil {
-		fmt.Printf("Vault login error: %v \n", err.Error())
+	vault, err := NewVault(nil)
+	if err != nil {
+		log.Printf("Vault error: %v \n", err.Error())
+		return err
 	}
 
-	rbac.Firebase = app
+	// Add vault instance
+	rbac.Vault = vault
+
+	// First vault authentication with .envs param
+	if err := rbac.Vault.LoginWithUserPassword(); err != nil {
+		log.Printf("Vault auth error: %v \n", err.Error())
+		return err
+	}
+
 	return nil
 }
 
 func (rbac *RBAC) verifyToken(bearerToken string) (*auth.Token, error) {
 	ctx := context.Background()
-	client, err := rbac.Firebase.Auth(ctx)
-	if err != nil {
-		return nil, err
-	}
 
-	token, err := client.VerifyIDToken(ctx, bearerToken)
+	token, err := rbac.FirebaseAdmin.VerifyIDToken(ctx, bearerToken)
 	if err != nil {
 		return nil, err
 	}
@@ -72,19 +77,19 @@ func (rbac *RBAC) GrantAccess(roles []string, method string, path string) bool {
 		granted = false
 
 		// Generate new token for current role
-		if err := rbac.Wrapper.LoginAs(role); err != nil {
-			fmt.Printf("LoginAs: %v\n", err.Error())
+		if err := rbac.Vault.LoginAs(role); err != nil {
+			log.Printf("Login as %s error: %v \n", role, err.Error())
 		}
 
 		switch method {
 		case http.MethodGet:
-			granted = rbac.Wrapper.CanRead(path)
+			granted = rbac.Vault.CanRead(path)
 		case http.MethodPost:
-			granted = rbac.Wrapper.CanWrite(path)
+			granted = rbac.Vault.CanWrite(path)
 		case http.MethodPut:
-			granted = rbac.Wrapper.CanWrite(path)
+			granted = rbac.Vault.CanWrite(path)
 		case http.MethodDelete:
-			granted = rbac.Wrapper.CanDelete(path)
+			granted = rbac.Vault.CanDelete(path)
 		}
 
 		if granted {
